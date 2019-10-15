@@ -24,20 +24,22 @@ def read_audio(path):
     files = os.listdir(path)
     
     N = len(files)
-    #random.seed(100)
+  
     audio_clips = []
     for n in range(N):
-        #index = random.randrange(0, len(files))
-        #print(files[index])
-
+    #        index = random.randrange(0, len(files))
+    #        print(files[index])
+    
         try:
-            #rate, sig = wav.read(path + "\\" + files[n])
+                #rate, sig = wav.read(path + "\\" + files[n])
             sig, rate = librosa.load(str(path) + "\\" + str(files[n]),sr=16000)
+    #        sig, rate = librosa.load(str(path), sr=16000)
+    
             if len(sig) > rate:
                 audio_clips.append((sig.astype(float),rate))
-        #IPython.display.Audio(data=sig, rate = rate)
+            #IPython.display.Audio(data=sig, rate = rate)
         except:
-            print("File could not be read")
+            print("%s could not be read" % files[n])
 
     audio_clips = np.asarray(audio_clips) # convert to numpy array
     #print(audio_clips.shape)

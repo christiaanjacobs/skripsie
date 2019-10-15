@@ -37,28 +37,51 @@ def createLinks(n_pages = 30):
     #print(links[0])
     return links
 
-def getVideoLink(links):
+#def getVideoLink(links):
+#    #extract href from all pages
+#    videolist = [] #contains video links
+#    for i in range(len(links)):
+#        print(i)
+#        time.sleep(2) # wait 2 seconds to prevent blacklisting
+#        r = requests.get(links[i])
+#        page = r.text
+#        soup=bs(page,'html.parser')
+#        #message = soup.findAll('yt-formatted-string')
+#        #print(message)
+#        try:
+#            vids = soup.findAll('a',attrs={'class':'yt-uix-tile-link yt-ui-ellipsis yt-ui-ellipsis-2 yt-uix-sessionlink spf-link'})
+#            for v in vids:
+#                videolist = np.append(videolist,'https://www.youtube.com' + v['href'])
+#            #print(videolist)
+#        except:
+#            print("No videos on page")
+#    #print(len(videolist))
+#    print(videolist[0])
+#    #print(len(vids))
+#    return videolist
+
+
+def getVideoLink(link):
     #extract href from all pages
     videolist = [] #contains video links
-    for i in range(len(links)):
-        print(i)
-        time.sleep(2) # wait 2 seconds to prevent blacklisting
-        r = requests.get(links[i])
-        page = r.text
-        soup=bs(page,'html.parser')
+    time.sleep(2) # wait 2 seconds to prevent blacklisting
+    r = requests.get(link)
+    page = r.text
+    soup=bs(page,'html.parser')
         #message = soup.findAll('yt-formatted-string')
         #print(message)
-        try:
-            vids = soup.findAll('a',attrs={'class':'yt-uix-tile-link yt-ui-ellipsis yt-ui-ellipsis-2 yt-uix-sessionlink spf-link'})
-            for v in vids:
-                videolist = np.append(videolist,'https://www.youtube.com' + v['href'])
+    try:
+        vids = soup.findAll('a',attrs={'class':'yt-uix-tile-link yt-ui-ellipsis yt-ui-ellipsis-2 yt-uix-sessionlink spf-link'})
+        for v in vids:
+            videolist = np.append(videolist,'https://www.youtube.com' + v['href'])
             #print(videolist)
-        except:
-            print("No videos on page")
+    except:
+        print("No videos on page")
     #print(len(videolist))
     print(videolist[0])
     #print(len(vids))
     return videolist
+
 
 
 def downloadAudio(url, maxTime = None):
@@ -76,33 +99,57 @@ def downloadAudio(url, maxTime = None):
         'keepvideo': False,
         'write-description' : True
     }
-    os.chdir("D:\Download")
+    print(os.getcwd())    
+    os.chdir("downloaded")
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        dictMeta = ydl.extract_info(url,download=False)
-        print(url)
-        file = open('videolist.txt', 'r')
-        
-        write = True
-        for line in file:
-            print(line)
-            if line.strip('\n') == dictMeta['title']:
-                write = False
-                
-        if write == True:
-            f = open('videolist.txt', 'a+')
-            f. write('%s\n' % dictMeta['title'])
-            f.close()
-            ydl.download([url])
+        try:
+            dictMeta = ydl.extract_info(url,download=False)
+            
+            try:
+                file = open('../videolist.txt', 'r')
+            except:
+                print("unlucky")
+            write = True
+            print(write)
+            for line in file:
+                #print(line)
+                if line.strip('\n') == dictMeta['title']:
+                    print('Video already downloaded')
+                    write = False
+            
+            print(write)        
+            if write == True:
+                f = open('../videolist.txt', 'a+')
+                f. write('%s\n' % dictMeta['title'])
+                f.close()
+                ydl.download([url])
+        except:
+            print("Could not connect")
+            write = False
+    os.chdir("../")
 
+    return write
     
+    
+def deleteAudio():
+    print(os.getcwd())
+    folder = 'downloaded'
+    for the_file in os.listdir(folder):
+        file_path = os.path.join(folder, the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            #elif os.path.isdir(file_path): shutil.rmtree(file_path)
+        except Exception as e:
+            print(e)
 
 #                    f = open('videolist.txt', 'a+')
 #                    f. write('%s\n' % dictMeta['title'])
                     
                     
                     
-createLinks()
-links = getVideoLink(createLinks(n_pages=1))
-print(len(links))
-for i in range(len(links)):
-    downloadAudio(links[i])
+#createLinks()
+#links = getVideoLink(createLinks(n_pages=1))
+#print(len(links))
+#for i in range(len(links)):
+#    downloadAudio(links[i])
