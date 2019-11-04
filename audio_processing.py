@@ -7,14 +7,10 @@ Created on Tue Sep 10 17:30:35 2019
 import os
 import scipy.io.wavfile as wav
 import numpy as np
-
 from python_speech_features import mfcc as MFCC
 from python_speech_features import delta as DELTA
-
-
 import librosa
 import librosa.display
-
 from sklearn.preprocessing import normalize
 
 # read n amount of audio clips from directory

@@ -55,13 +55,16 @@ def main():
     while True:
         
         if start == True:
-           #txt.delete(1.0,END)
-           links = crawler.createLinks()
-           log("%d links created"%len(links))
+            txt.config(state=NORMAL)
+            txt.delete(1.0,END)
+            txt.config(state=DISABLED)
+            
+            links = crawler.createLinks()
+            log("%d links created"%len(links))
            #txt.insert(INSERT, chars="%d links created\n"%len(links))
-           getUrl()
-           link_index = 0
-           start = False
+            getUrl()
+            link_index = 0
+            start = False
            
         if get_url == True:
             #txt.insert(INSERT, chars="Extracting urls\n")
@@ -93,31 +96,40 @@ def main():
                     
                     # label seconds
                     print("Classifying...")
-                    txt.insert(INSERT, chars="Classifying\n")
+                    log("Classifying")
+                    #txt.insert(INSERT, chars="Classifying\n")
 
                     
                     all_probs = cln.probs(feats,speech_model,mix_model)
                     second_probs = cln.avg_prob(all_probs)
                     probs_thershold, save_all = cln.thershold(second_probs,segmented_clips)
-                    filtered = cln.median_filter(probs_thershold)
-                    mfccs_labeled = cln.label(filtered)
+                    
+                    mfccs_labeled = cln.label(probs_thershold)
+
+                    filtered = cln.median_filter(mfccs_labeled)
+                    
+                    
                     print("Done!")
                     #print(mfccs_labeled)
                     #print(save_all)
                     # Write remaining speech to folder
                     print("Write speech to folder...")
-                    txt.insert(INSERT, chars="Write speech segments to folder\n")
+                    #txt.insert(INSERT, chars="Write speech segments to folder\n")
+                    log("Write speech segments to folder")
     
                     save_all = np.array(save_all) #contains segmented_clips to write
-                    wa.write(mfccs_labeled,save_all)
+                    wa.write(filtered,save_all)
                     print("Done!")
                     
                     print("Deleting original audio")
-                    txt.insert(INSERT, chars="Deleting original audio\n")
+                    #txt.insert(INSERT, chars="Deleting original audio\n")
+                    log("Deleting original audio")
                    
                     crawler.deleteAudio()
                     print("Done!")
-                    txt.insert(INSERT, chars="###############################################\n")
+                    #txt.insert(INSERT, chars="###############################################\n")
+                    log("###############################################")
+                    
                  
                     
                 else:
@@ -137,12 +149,13 @@ window = Tk()
 window.title("Speech Collector")
 window.geometry('800x600')
     
-txt = scrolledtext.ScrolledText(window,width=60,height=20, state=DISABLED)
+txt = scrolledtext.ScrolledText(window,width=60,height=20)
 txt.pack(side="left", fill=Y)
 txt.insert(INSERT, chars="Press start to begin...")
+txt.config(state=DISABLED)
     
 btn_start = Button(window, text='Start', width=20, command=btnStart)
-btn_start.place(x=600,y=80)
+btn_start.place(x=570,y=80)
 
 window.mainloop()
 

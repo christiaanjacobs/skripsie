@@ -13,7 +13,6 @@ import os
 import numpy as np
 import random
 import time
-
 import youtube_dl
 
 #TODO: Save links to txt file and do not downlaod again

@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 
 
 
-
+# Calculates the average log-likelihood of 1-second window being speech and labels it accordingly
 def loglike(mfccs_test,speech_model,mix_model):
-    print(len(mfccs_test))
+    #print(len(mfccs_test))
     feat_labels = []
     for j in range(len(mfccs_test)):
         test = mfccs_test[j]
@@ -34,7 +34,7 @@ def loglike(mfccs_test,speech_model,mix_model):
     return feat_labels
     
     
-    
+# Calculates the probability of 25ms being speech from models    
 def probs(mfccs_test,speech_model,mix_model):
     all_probs = []
     for j in range(len(mfccs_test)):
@@ -54,7 +54,7 @@ def probs(mfccs_test,speech_model,mix_model):
     all_probs = np.array(all_probs)
     return all_probs
 
-
+# Calcualte the average probability in 1-second window
 def avg_prob(all_probs):
     # sum probabilities over second
     second_probs = []
@@ -71,12 +71,13 @@ def avg_prob(all_probs):
     second_probs = np.asarray(second_probs)
     return second_probs
 
-#print(all_probs[0].shape)
-# Apply thershold
+
+# Select threshold and determine which windwows to disregard
 def thershold(second_probs,segmented_clips):
     probs_thershold = []
     t = 0
     c = 0
+    th = 0.15
 #    plt.figure(figsize=(12,4))
 #    plt.scatter(np.linspace(0,len(second_probs[0])-1,len(second_probs[0])),second_probs[0])
 #    plt.plot(np.full((len(second_probs[0])),0.6))
@@ -93,7 +94,7 @@ def thershold(second_probs,segmented_clips):
             k = x[j]
             #print(k)
            
-            if k < 0.6 and k > 0.4:
+            if k < (0.5+th) and k > (0.5-th):
                 #print(k)
                 c +=1
                 #save = np.append(save,0)
@@ -127,29 +128,43 @@ def thershold(second_probs,segmented_clips):
     
     return probs_thershold, save_all
 
-def median_filter(probs_thershold):
-    # Apply medfilter
+# Apply post processing on 1-second windows. If window labelled as speecch has non-speech neighbourng frames, change windoe to non-speech.
+def median_filter(mfccs_labeled):
     from scipy.signal import medfilt
     filtered = []
     #t = 0
-    for i in range(len(probs_thershold)):
-        filtered.append(medfilt(probs_thershold[i],kernel_size=5))
-        #print(1-np.sum(filtered[i])/len(filtered[i]))
-        #c+=np.sum(filtered[i])
-        #t+= len(filtered[i])
-    #print(filtered)
-    filtered = np.asarray(filtered)
-    #print(filtered[0])
+    
+    
+    for i in range(len(mfccs_labeled)):
+    #     print(len(mfccs_labeled[i]))
+        for j in range(len(mfccs_labeled[i])):
+            if mfccs_labeled[i][j] == 0 and j<(len(mfccs_labeled[i])-1):
+    #             print(j)
+                if mfccs_labeled[i][j-1] == 1 and mfccs_labeled[i][j+1] == 1:
+                    mfccs_labeled[i][j] = 1
+
+    
+#    for i in range(len(probs_thershold)):
+#        filtered.append(medfilt(probs_thershold[i],kernel_size=5))
+#        #print(1-np.sum(filtered[i])/len(filtered[i]))
+#        #c+=np.sum(filtered[i])
+#        #t+= len(filtered[i])
+#    #print(filtered)
+#    filtered = np.asarray(filtered)
+#    #print(filtered[0])
+    
+    
     
     return filtered
 
-def label(filtered):
+# Use probabiliteis to label 1-second windows accordingly
+def label(probs_thershold):
     # Hard label probabilities
     mfccs_labeled = []
-    for i in range(len(filtered)):
+    for i in range(len(probs_thershold)):
         x = []
-        for j in range(len(filtered[i])):
-            if filtered[i][j] > 0.5:
+        for j in range(len(probs_thershold[i])):
+            if probs_thershold[i][j] > 0.5:
                 x.append(0)
             else:
                 x.append(1)
